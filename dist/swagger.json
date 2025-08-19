@@ -1,55 +1,55 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "title": "LangGraph Workflow API",
-      "version": "1.0.0",
-      "description": "Interactúa con tus agentes LangChain/Gemini desde Swagger"
+        "title": "LangGraph Workflow API",
+        "version": "1.0.0",
+        "description": "Interactúa con tus agentes LangChain/Gemini desde Swagger"
     },
     "paths": {
-      "/invoke": {
-        "post": {
-          "summary": "Invoca el workflow de agentes",
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "role": { "type": "string", "example": "user" },
-                          "content": { "type": "string", "example": "Quiero información sobre energía renovable" }
-                        },
-                        "required": ["role", "content"]
-                      }
+        "/invoke": {
+            "post": {
+                "summary": "Invoca el workflow de agentes",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "messages": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "role": { "type": "string", "example": "user" },
+                                                "content": { "type": "string", "example": "Quiero información sobre energía renovable" }
+                                            },
+                                            "required": ["role", "content"]
+                                        }
+                                    }
+                                },
+                                "required": ["messages"]
+                            }
+                        }
                     }
-                  },
-                  "required": ["messages"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Respuesta del workflow",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "finalMessage": { "type": "string" },
-                      "fullFlow": { "type": "array", "items": { "type": "string" } }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Respuesta del workflow",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "finalMessage": { "type": "string" },
+                                        "fullFlow": { "type": "array", "items": { "type": "string" } }
+                                    }
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
             }
-          }
         }
-      }
     }
-  }
+}

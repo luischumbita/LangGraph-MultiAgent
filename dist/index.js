@@ -1,47 +1,32 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.app = void 0;
-const google_genai_1 = require("@langchain/google-genai");
-const langgraph_1 = require("@langchain/langgraph");
-// Define the channels
-const graphState = {
-    messages: {
-        value: (x, y) => x.concat(y),
-        default: () => [],
-    },
-};
-// Create the model
-const model = new google_genai_1.ChatGoogleGenerativeAI({
-    model: "gemini-1.5-flash",
-    apiKey: process.env.GOOGLE_API_KEY,
+import 'dotenv/config';
+import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from './swagger.json';
+import { llm } from './llm';
+const app = express();
+app.use(express.json());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Endpoint para invocar el flujo
+app.post('/invoke', async (req, res) => {
+    try {
+        const { messages } = req.body;
+        if (!messages || !Array.isArray(messages)) {
+            return res.status(400).json({ error: "Debes enviar un array 'messages'" });
+        }
+        // Invocamos el workflow
+        const result = await llm.invoke({ messages });
+        // Opcional: puedes devolver también todos los logs intermedios
+        res.json({
+            finalMessage: result.messages[result.messages.length - 1].content,
+            fullFlow: result.messages.map((m) => m.content)
+        });
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error al ejecutar el flujo" });
+    }
 });
-// Define the agents
-async function investigator(state) {
-    return {
-        messages: [
-            {
-                role: "assistant",
-                content: "I found relevant information about renewable energy.",
-            },
-        ],
-    };
-}
-async function redactor(state) {
-    const context = state.messages.map((m) => m.content).join("\n");
-    const response = await model.invoke(state.messages);
-    return { messages: [response] };
-}
-// Create the state graph connecting the agents
-const workflow = new langgraph_1.StateGraph({ channels: graphState })
-    .addNode("investigator", investigator)
-    .addNode("redactor", redactor)
-    .addEdge("investigator", "redactor") // flow A → B
-    .addEdge("redactor", langgraph_1.END); // ends after the redactor
-workflow.setEntryPoint("investigator");
-// Compile the graph
-exports.app = workflow.compile();
-// Execute the flow
-(async () => {
-    const result = (await exports.app.invoke({ messages: [{ role: "user", content: "I need information about renewable energy." }] }));
-    console.log("Final result:\n", result.messages[result.messages.length - 1].content);
-})();
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server corriendo en http://localhost:${PORT}/api-docs`);
+});
